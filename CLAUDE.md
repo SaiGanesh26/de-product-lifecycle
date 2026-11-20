@@ -14,6 +14,9 @@ end every step in something runnable.
 - `skills/<name>/SKILL.md` plus optional `scripts/`, `templates/`, `references/`.
 - `agents/<name>.md`: decision flows with their own context; preload skills via `skills:`.
 - `hooks/hooks.json`: plugin hooks. Keep them fast, silent, and opt-in.
+- `commands/`, `workflows/`, `.mcp.json`: slash commands, multi-agent loops, and MCP servers
+  when a flow needs them. Any component kind is welcome; each joins the lifecycle by being
+  declared as a provider or fallback in `lifecycle.json`, and each gets a row in the README.
 
 ## Conventions for skills
 
