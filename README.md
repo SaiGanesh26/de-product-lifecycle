@@ -7,11 +7,23 @@ the task matches its description.
 
 ## Skills
 
-| Skill | What it does |
-|---|---|
-| [`de-code-review`](skills/de-code-review/SKILL.md) | Reviews data-engineering changes (SQL, dbt, Spark, DAGs, Python ETL, migrations, infra) the way the Claude Code team reviews its own PRs: verify with tools, scale rigor to blast radius, report only real bugs with `file:line` and an `Important` / `Nit` / `Pre-existing` label. |
-| [`harness-trim`](skills/harness-trim/SKILL.md) | Keeps sessions lean next to a big harness like ECC: the plugin stays installed but disabled as a library, and a daily set of its skills and agents is symlinked in, chosen from a DE baseline plus what your own transcripts show you invoke. Re-evaluates weekly via a `SessionEnd` hook. |
-| [`lifecycle-router`](skills/lifecycle-router/SKILL.md) | Decides who handles each step: your own skills and agents first, then ECC's, then this plugin's fallbacks. In `ask` mode (default) you pick from the ranked options; `auto` mode decides by precedence. Contract in [`lifecycle.json`](lifecycle.json). |
+Stage by stage. Each skill ends in something runnable and says when the user's own tools or
+ECC's should be used instead.
+
+| Stage | Skill | What it does |
+|---|---|---|
+| design | [`de-impact`](skills/de-impact/SKILL.md) | Blast radius of a model or column change from the dbt manifest and BI layer, as a contract-break table. Extends ECC `change-impact`. `scripts/dbt_impact.py`. |
+| design | [`de-model`](skills/de-model/SKILL.md) | Decision checklist (grain, materialization, lookback, partition, SCD) then scaffolds a dbt model with schema tests and runs it. `scripts/scaffold_model.py`. |
+| verify | [`de-verify`](skills/de-verify/SKILL.md) | Before/after reconciliation of a changed table: counts, grain uniqueness, nulls, sums, bounds, one-sided keys. Flags what moved; exit 1 gates a PR. `scripts/reconcile.py`. |
+| review | [`de-code-review`](skills/de-code-review/SKILL.md) | Reviews data-engineering changes the way the Claude Code team reviews its own PRs: verify with tools, scale rigor to blast radius, report only real bugs with `file:line` and an `Important` / `Nit` / `Pre-existing` label. |
+| ship | [`de-pr`](skills/de-pr/SKILL.md) | PR description built from proof: de-verify block under Testing, risk tier with downstream consumers, revert steps including data. `scripts/pr_body.py`. |
+| ship | [`de-backfill`](skills/de-backfill/SKILL.md) | Bounded, idempotent, partition-aware backfill plan with per-batch verify and stop conditions. `scripts/backfill_plan.py` never executes. |
+| operate | [`de-incident`](skills/de-incident/SKILL.md) | Layer-by-layer triage from symptom to root cause, containment, and a no-blame writeup that asks which check should have caught it. `scripts/run_results_summary.py`. |
+| all | [`lifecycle-router`](skills/lifecycle-router/SKILL.md) | Decides who handles each step: your own skills and agents first, then ECC's, then this plugin's fallbacks. `ask` mode (default) shows ranked options; `auto` decides. |
+| learn | [`harness-trim`](skills/harness-trim/SKILL.md) | Keeps ECC installed but disabled as a library and symlinks a daily set chosen from a DE baseline plus your transcript usage. Weekly `SessionEnd` re-evaluation. |
+
+Agent: [`de-lead`](agents/de-lead.md) classifies a task into capabilities, resolves each through
+the router, and returns a plan. It never implements.
 
 ## How it fits together
 
@@ -66,14 +78,16 @@ python3 -I ~/.claude/plugins/cache/de-product-lifecycle/de-product-lifecycle/*/s
 
 ## Roadmap
 
-Fallbacks declared in `lifecycle.json` but not built yet, in build order: `de-verify`
-(before/after reconciliation), `de-pr`, `de-model`, `de-impact`, `de-backfill`, `de-incident`.
-ECC already covers generic impact analysis (`change-impact`) and GitHub operations
-(`github-ops`), so `de-impact` and `de-pr` will be thin DE wrappers.
+All fallbacks declared in `lifecycle.json` are built. Next: evals under `skills/*/evals/` so
+each skill is scored against a real diff, model, or incident; a `de-contract` skill for data
+contracts and freshness SLAs; and promoting any skill ECC lacks upstream once it has earned
+its keep here.
 
-It is meant to sit beside a generic harness such as [ECC](https://github.com/affaan-m/ECC),
-which covers planning, TDD, verification loops, security scans, and memory. This plugin
-adds only what is specific to data engineering.
+## Contributing
+
+Every change, including ones Claude makes, goes on a `feat-`, `fix-`, or `chore-` branch,
+updates this README, passes `claude plugin validate .`, and lands as a PR against `main`
+that the owner merges. [`CLAUDE.md`](CLAUDE.md) holds the full conventions.
 
 ## Adding a skill
 

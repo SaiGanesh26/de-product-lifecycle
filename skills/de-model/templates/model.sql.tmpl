@@ -1,0 +1,33 @@
+{{
+    config(
+${config_lines}
+    )
+}}
+
+-- ${name}
+-- Grain: one row per ${grain_human}
+-- ${description}
+
+with source as (
+
+    select * from ${source_ref}
+${incremental_filter}
+),
+
+renamed as (
+
+    select
+${select_lines}
+    from source
+
+),
+
+final as (
+
+    -- Keep this CTE at the declared grain. If a join below could fan out,
+    -- dedupe before it, not after.
+    select * from renamed
+
+)
+
+select * from final
