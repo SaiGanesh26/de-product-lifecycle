@@ -118,7 +118,9 @@ real schedule. Most review misses come from trusting a summary.
 You have been staring at this diff and have formed a story about it. That story is the
 model judging itself. For Medium and High tiers, when you can spawn a subagent, hand a
 fresh one the diff, the risk tier, the repo's `REVIEW.md`, and the failure-mode
-reference. Do **not** hand it your findings; anchoring is the whole thing you are trying
+reference. Pick that reviewer through the `lifecycle-router` skill
+(`resolve.py resolve review.code`): the user's own reviewer agent outranks ECC's, which
+outranks a generic subagent, and in ask mode the user chooses. Do **not** hand it your findings; anchoring is the whole thing you are trying
 to avoid. Ask it to return findings in the same format you use.
 
 Then vote. A finding both reviewers surfaced, or one that either can back with a command

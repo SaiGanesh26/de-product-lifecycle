@@ -1,0 +1,99 @@
+{
+  "version": 1,
+  "_comment": "Capability contract for the data product lifecycle. For each capability: the stage, keywords used to spot matching skills/agents the user already has, known providers in precedence order, and this plugin's own fallback. Precedence at run time is by LOCATION (project > user > ECC daily links > other plugins > built-ins > ECC library not loaded > plugin fallback); known_providers only help name things and detect dangling names. Set `planned: true` on fallbacks that are not built yet.",
+  "default_mode": "ask",
+  "stages": ["intake", "design", "build", "verify", "review", "ship", "operate", "learn"],
+  "capabilities": {
+    "intake.plan": {
+      "stage": "intake",
+      "description": "Restate the task, surface risks and unknowns, produce a step plan before code.",
+      "keywords": ["plan", "requirements", "prd", "scope"],
+      "known_providers": [{"type": "agent", "name": "planner", "source": "ecc"}],
+      "fallback": null
+    },
+    "design.impact": {
+      "stage": "design",
+      "description": "Blast radius of a schema, model, or interface change: downstream consumers, contracts, rollback.",
+      "keywords": ["impact", "blast radius", "downstream", "lineage", "breaking change"],
+      "known_providers": [{"type": "skill", "name": "change-impact", "source": "ecc"}, {"type": "agent", "name": "architect", "source": "ecc"}],
+      "fallback": {"type": "skill", "name": "de-impact", "planned": true, "note": "DE extension: dbt manifest refs, exposures, BI lineage"}
+    },
+    "design.data-model": {
+      "stage": "design",
+      "description": "Grain, keys, SCD strategy, partitioning, and the tests that encode them.",
+      "keywords": ["schema design", "data model", "grain", "dimensional", "partition"],
+      "known_providers": [{"type": "agent", "name": "database-reviewer", "source": "ecc"}, {"type": "skill", "name": "postgres-patterns", "source": "ecc"}, {"type": "skill", "name": "clickhouse-io", "source": "ecc"}],
+      "fallback": {"type": "skill", "name": "de-model", "planned": true, "note": "dbt model + schema.yml + grain tests + docs from a one-line spec"}
+    },
+    "build.migration": {
+      "stage": "build",
+      "description": "Safe, reversible schema and data migrations; expand/contract; batched backfill of columns.",
+      "keywords": ["migration", "alter table", "expand contract", "zero downtime"],
+      "known_providers": [{"type": "skill", "name": "database-migrations", "source": "ecc"}],
+      "fallback": null
+    },
+    "build.tests": {
+      "stage": "build",
+      "description": "Tests first for new logic; pytest fixtures, parametrization, coverage.",
+      "keywords": ["tdd", "pytest", "unit test", "test first"],
+      "known_providers": [{"type": "agent", "name": "tdd-guide", "source": "ecc"}, {"type": "skill", "name": "python-testing", "source": "ecc"}],
+      "fallback": null
+    },
+    "verify.generic": {
+      "stage": "verify",
+      "description": "Build, type-check, lint, tests, security grep, diff review; PASS/FAIL report.",
+      "keywords": ["verification", "quality gate", "lint", "type check"],
+      "known_providers": [{"type": "skill", "name": "verification-loop", "source": "ecc"}],
+      "fallback": null
+    },
+    "verify.reconcile": {
+      "stage": "verify",
+      "description": "Before/after reconciliation of a changed table or model: row counts, grain uniqueness, measure sums, date bounds.",
+      "keywords": ["reconcile", "row count", "before after", "tie out", "regression data"],
+      "known_providers": [],
+      "fallback": {"type": "skill", "name": "de-verify", "planned": true, "note": "scripts/reconcile.py over two relations"}
+    },
+    "review.code": {
+      "stage": "review",
+      "description": "Find real bugs in a diff or PR before merge; labeled, file:line-anchored findings.",
+      "keywords": ["code review", "review the diff", "review pr", "pull request review"],
+      "known_providers": [{"type": "skill", "name": "code-review", "source": "builtin"}, {"type": "agent", "name": "code-reviewer", "source": "ecc"}, {"type": "agent", "name": "python-reviewer", "source": "ecc"}, {"type": "agent", "name": "silent-failure-hunter", "source": "ecc"}, {"type": "agent", "name": "pr-test-analyzer", "source": "ecc"}],
+      "fallback": {"type": "skill", "name": "de-code-review", "note": "DE-specific: verification ladder, failure modes, risk tiers"}
+    },
+    "review.security": {
+      "stage": "review",
+      "description": "Secrets, injection, PII exposure, over-broad IAM in a change.",
+      "keywords": ["security review", "secrets", "pii", "owasp", "iam"],
+      "known_providers": [{"type": "skill", "name": "security-review", "source": "builtin"}, {"type": "agent", "name": "security-reviewer", "source": "ecc"}],
+      "fallback": null
+    },
+    "ship.pr": {
+      "stage": "ship",
+      "description": "Open the PR with proof of testing, risk tier, and revert steps.",
+      "keywords": ["pull request", "open pr", "create pr", "github"],
+      "known_providers": [{"type": "skill", "name": "github-ops", "source": "ecc"}, {"type": "skill", "name": "pr", "source": "ecc"}],
+      "fallback": {"type": "skill", "name": "de-pr", "planned": true, "note": "wrapper: fills Testing / Risk / How to revert from de-verify output"}
+    },
+    "ship.backfill": {
+      "stage": "ship",
+      "description": "Bounded, idempotent, partition-aware backfill plan and command.",
+      "keywords": ["backfill", "reprocess", "rerun partitions", "historical load"],
+      "known_providers": [],
+      "fallback": {"type": "skill", "name": "de-backfill", "planned": true}
+    },
+    "operate.incident": {
+      "stage": "operate",
+      "description": "Triage a failed or stale pipeline run from logs to root cause; draft the writeup.",
+      "keywords": ["incident", "failed run", "stale data", "root cause", "postmortem", "on-call"],
+      "known_providers": [{"type": "agent", "name": "silent-failure-hunter", "source": "ecc"}],
+      "fallback": {"type": "skill", "name": "de-incident", "planned": true}
+    },
+    "learn.trim": {
+      "stage": "learn",
+      "description": "Keep the loaded skill set matched to what is actually used.",
+      "keywords": ["trim", "prune skills", "too many skills", "context cost"],
+      "known_providers": [],
+      "fallback": {"type": "skill", "name": "harness-trim"}
+    }
+  }
+}

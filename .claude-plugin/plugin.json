@@ -1,6 +1,6 @@
 {
   "name": "de-product-lifecycle",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Data-engineering skills across the data product lifecycle: review, verify, ship, operate. Sits beside a generic harness such as ECC and adds only what is specific to pipelines, warehouses, dbt, Spark, and orchestration.",
   "author": {
     "name": "Sai Ganesh Vuppala",
