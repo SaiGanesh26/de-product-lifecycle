@@ -1,7 +1,7 @@
 {
   "name": "de-product-lifecycle",
-  "version": "0.4.0",
-  "description": "Data-engineering skills across the data product lifecycle: review, verify, ship, operate. Sits beside a generic harness such as ECC and adds only what is specific to pipelines, warehouses, dbt, Spark, and orchestration.",
+  "version": "0.4.1",
+  "description": "Claude Code plugin for the data product lifecycle: a capability contract, an orchestrator agent, a router that prefers the user's own skills and ECC's before its own, and stage skills for design, verify, review, ship, and operate with runnable scripts. Adds only what is specific to pipelines, warehouses, dbt, Spark, and orchestration.",
   "author": {
     "name": "Sai Ganesh Vuppala",
     "url": "https://github.com/SaiGanesh26"
@@ -9,5 +9,14 @@
   "homepage": "https://github.com/SaiGanesh26/de-product-lifecycle",
   "repository": "https://github.com/SaiGanesh26/de-product-lifecycle",
   "license": "MIT",
-  "keywords": ["data-engineering", "dbt", "spark", "airflow", "code-review", "sql", "pipelines", "skills"]
+  "keywords": [
+    "data-engineering",
+    "dbt",
+    "spark",
+    "airflow",
+    "code-review",
+    "sql",
+    "pipelines",
+    "skills"
+  ]
 }
