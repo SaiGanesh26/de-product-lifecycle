@@ -126,30 +126,42 @@ Every change, including ones Claude makes, goes on a `feat-`, `fix-`, or `chore-
 updates this README, passes `claude plugin validate .`, and lands as a PR against `main`
 that the owner merges. [`CLAUDE.md`](CLAUDE.md) holds the full conventions.
 
-## Repository layout
+## Repository layout and extending it
+
+The plugin is not limited to skills. Anything Claude Code can load from a plugin has a home
+here, and each kind joins the lifecycle the same way: declare the capability it serves in
+`lifecycle.json`, build the component, keep the README table current.
 
 ```
 .claude-plugin/
 ├── plugin.json       # plugin identity and version (bump with marketplace.json)
 └── marketplace.json  # lets `/plugin install` find it from the GitHub repo
 lifecycle.json        # capability contract: stage, keywords, known providers, fallback
-agents/<name>.md      # decision flows with their own context; preload skills via `skills:`
-hooks/hooks.json      # plugin hooks (currently: weekly harness-trim re-evaluation)
-skills/<skill-name>/
-├── SKILL.md          # frontmatter (name, description) + instructions; keep under ~200 lines
-├── scripts/          # python3 stdlib, argparse, runs under `python3 -I`
-├── references/       # longer material the skill points to, loaded only when needed
-├── templates/        # files the skill drops into a project (PR templates, writeups)
-└── evals/            # optional test prompts (claude plugin eval layout)
+agents/<name>.md      # decision flows with their own context window; preload skills via `skills:`
+skills/<name>/        # instructions + scripts/ templates/ references/ evals/
+hooks/hooks.json      # lifecycle hooks (SessionStart/End, Pre/PostToolUse, Stop); fast, silent, opt-in
+commands/<name>.md    # slash-command entry points when a flow needs explicit invocation
+workflows/<name>.js   # multi-agent loops (plan -> build -> verify -> review) for the Workflow tool
+.mcp.json             # MCP servers the plugin needs (warehouse, orchestrator, lineage APIs)
 ```
 
+| Kind | Use it for | Joins the lifecycle by |
+|---|---|---|
+| Skill | A flow the user steers in the main context; the deterministic part in `scripts/`. | Named as a `fallback` or `known_provider` in `lifecycle.json`. |
+| Agent | A decision flow or review that benefits from a fresh context and its own tool list. | Same; `de-lead` is the orchestrator, stage agents are providers. |
+| Hook | Something that must happen on every session or tool call without being asked. | Declared in `hooks/hooks.json`; must be a no-op until the user opts in. |
+| Loop or workflow | A bounded multi-agent cycle, e.g. author/reviewer convergence with a cap on rounds. | Declared in `lifecycle.json` as a provider for the capability it automates. |
+| Command | A named entry point when description matching is not enough. | Thin wrapper that invokes the skill or agent. |
+| MCP server | Live access to a warehouse, orchestrator, or lineage tool the flows should query. | Referenced by the skills that need it; never required for install. |
+
 To add a capability: declare it in `lifecycle.json` (with `"planned": true` on the fallback
-until it exists), then build the skill or agent and drop the flag. The router reports planned
+until it exists), then build the component and drop the flag. The router reports planned
 fallbacks honestly in the meantime.
 
 Rules of thumb, learned the hard way:
 
-- The `description` is the trigger. Say what the skill does and when to use it, including phrasings that don't name it.
+- The `description` is the trigger. Say what the component does and when to use it, including phrasings that don't name it.
 - Explain why each instruction exists. Agents follow reasoning better than shouted rules.
 - Prefer verification the agent can run over verification it can assert.
-- Keep `SKILL.md` lean; push detail into `references/` and the deterministic part into `scripts/`.
+- Keep instructions lean; push detail into `references/` and the deterministic part into `scripts/`.
+- Reuse before building: if ECC or the user already has it, reference it as a provider.
