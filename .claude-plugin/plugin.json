@@ -1,0 +1,13 @@
+{
+  "name": "de-product-lifecycle",
+  "version": "0.1.0",
+  "description": "Data-engineering skills across the data product lifecycle: review, verify, ship, operate. Sits beside a generic harness such as ECC and adds only what is specific to pipelines, warehouses, dbt, Spark, and orchestration.",
+  "author": {
+    "name": "Sai Ganesh Vuppala",
+    "url": "https://github.com/SaiGanesh26"
+  },
+  "homepage": "https://github.com/SaiGanesh26/de-product-lifecycle",
+  "repository": "https://github.com/SaiGanesh26/de-product-lifecycle",
+  "license": "MIT",
+  "keywords": ["data-engineering", "dbt", "spark", "airflow", "code-review", "sql", "pipelines", "skills"]
+}
