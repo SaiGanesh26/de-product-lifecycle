@@ -10,6 +10,7 @@ the task matches its description.
 | Skill | What it does |
 |---|---|
 | [`de-code-review`](skills/de-code-review/SKILL.md) | Reviews data-engineering changes (SQL, dbt, Spark, DAGs, Python ETL, migrations, infra) the way the Claude Code team reviews its own PRs: verify with tools, scale rigor to blast radius, report only real bugs with `file:line` and an `Important` / `Nit` / `Pre-existing` label. |
+| [`harness-trim`](skills/harness-trim/SKILL.md) | Keeps sessions lean next to a big harness like ECC: the plugin stays installed but disabled as a library, and a daily set of its skills and agents is symlinked in, chosen from a DE baseline plus what your own transcripts show you invoke. Re-evaluates weekly via a `SessionEnd` hook. |
 
 ## Install
 
@@ -32,6 +33,14 @@ claude plugin install de-product-lifecycle@de-product-lifecycle
 Skills then show up as `/de-product-lifecycle:de-code-review` (or just ask for a review of a
 diff, PR, model, or DAG). Update with `claude plugin update de-product-lifecycle`.
 
+If you also run ECC, trim it to what you use:
+
+```bash
+python3 -I ~/.claude/plugins/cache/de-product-lifecycle/de-product-lifecycle/*/skills/harness-trim/scripts/harness_trim.py report
+```
+
+Then `apply` instead of `report` to switch to the lean daily set, `library` to get all of ECC back.
+
 It is meant to sit beside a generic harness such as [ECC](https://github.com/affaan-m/ECC),
 which covers planning, TDD, verification loops, security scans, and memory. This plugin
 adds only what is specific to data engineering.
@@ -42,6 +51,7 @@ adds only what is specific to data engineering.
 .claude-plugin/
 ├── plugin.json       # plugin name, version, metadata
 └── marketplace.json  # lets `/plugin install` find it from the GitHub repo
+hooks/hooks.json      # plugin hooks (currently: weekly harness-trim re-evaluation)
 skills/<skill-name>/
 ├── SKILL.md          # frontmatter (name, description) + instructions; keep under ~300 lines
 ├── references/       # longer material the skill points to, loaded only when needed

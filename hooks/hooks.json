@@ -1,0 +1,17 @@
+{
+  "description": "harness-trim: once a week at session end, re-evaluate which ECC skills earn a place in the daily set. No-op until the user has run `harness_trim.py apply` once.",
+  "hooks": {
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 -I \"${CLAUDE_PLUGIN_ROOT}/skills/harness-trim/scripts/harness_trim.py\" apply --if-stale 7 --quiet",
+            "timeout": 30
+          }
+        ]
+      }
+    ]
+  }
+}
