@@ -158,7 +158,7 @@ So:
 ### Report template
 
 ```
-## Review: <PR / branch / path>  —  Tier: <Low|Medium|High> (<one-line reason>)
+## Review: <PR / branch / path> | Tier: <Low|Medium|High> (<one-line reason>)
 
 **Verdict:** <Approve | Approve with fixes | Request changes | Needs human review>
 **Findings:** <n> Important, <n> Nit, <n> Pre-existing   (or: **No issues found.**)
@@ -169,7 +169,7 @@ So:
 - Could not verify: <what, and why it matters>
 
 ### Important
-1. `path/to/file.sql:42` — <one-sentence defect>
+1. `path/to/file.sql:42`: <one-sentence defect>
    Scenario: <input/state → wrong output>
    Verify: <command or query>
    Fix: <suggestion>

@@ -3,7 +3,7 @@
 Condensed notes from the two pieces this skill was built on, kept so the reasoning behind
 the instructions stays inspectable. Both were read in full on 2026-11-09.
 
-## "How the Claude Code team does code review" — Addy Osmani (via x.com, 2026-10-26)
+## "How the Claude Code team does code review", Addy Osmani (via x.com, 2026-10-26)
 
 Post: https://x.com/addyosmani/status/2114604912520921136
 Article: https://x.com/i/article/2114435487905808384
@@ -46,7 +46,7 @@ Ideas carried into the skill:
 - When the reviewer misses something, ask what was missing from its context and encode
   it as a CLAUDE.md line, a skill, or a check.
 
-## "How to be more ambitious: a tutorial for humans with models" — Felix Rieseberg (2026-10-13)
+## "How to be more ambitious: a tutorial for humans with models", Felix Rieseberg (2026-10-13)
 
 https://felixrieseberg.com/how-to-be-more-ambitious-a-tutorial-for-humans-with-models/
 

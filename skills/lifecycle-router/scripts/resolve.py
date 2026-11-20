@@ -125,11 +125,15 @@ def inventory():
             root = Path(rec.get("installPath", ""))
             add_entries(inv, root / "skills", root / "agents", 4, plugin=pid)
     # this plugin's own skills are fallbacks (tier 7), whether installed or run from a checkout
-    own = PLUGIN_ROOT
-    for rec in installed.get(f"{THIS_PLUGIN}@{THIS_PLUGIN}", []):
-        if Path(rec.get("installPath", "")).is_dir():
-            own = Path(rec["installPath"])
-    add_entries(inv, own / "skills", own / "agents", 7, plugin=THIS_PLUGIN)
+    roots = [PLUGIN_ROOT] + [Path(rec["installPath"]) for rec in installed.get(f"{THIS_PLUGIN}@{THIS_PLUGIN}", [])
+                             if Path(rec.get("installPath", "")).is_dir()]
+    seen_own = set()
+    for root in roots:  # the checkout this script runs from first, then the installed copy
+        own = []
+        add_entries(own, root / "skills", root / "agents", 7, plugin=THIS_PLUGIN)
+        for e in own:
+            if (e["type"], e["name"]) not in seen_own:
+                seen_own.add((e["type"], e["name"])); inv.append(e)
     if not enabled.get("ecc@ecc") and ECC_LIB.is_dir():
         loaded = {(e["type"], e["name"]) for e in inv if e["tier"] == 3}
         lib = []
