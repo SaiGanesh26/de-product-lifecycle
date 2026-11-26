@@ -25,7 +25,7 @@ loaded into every review. Edit the bracketed parts, then delete this paragraph.
 ## Reporting rules
 
 - Every finding anchors to `path:line`. No guessed filenames.
-- Label each finding `Important`, `Nit`, or `Pre-existing`.
+- Prefix each finding: `Needs fix:`, `Needs change:`, `Needs human:` (blocking); `Question:`, `Suggestion:`, `Nit:`, `Pre-existing:` (non-blocking). Three sentences max: claim, evidence, fix.
 - Give a concrete failure scenario and a way to verify it.
 - Open with a summary: finding counts, or an explicit "No issues found."
 - Do not re-report findings from earlier rounds. After three rounds, recommend rethinking

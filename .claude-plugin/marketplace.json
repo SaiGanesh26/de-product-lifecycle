@@ -10,9 +10,10 @@
   "plugins": [
     {
       "name": "de-product-lifecycle",
+      "displayName": "DE product lifecycle",
       "source": "./",
       "description": "Claude Code plugin for the data product lifecycle: a capability contract, an orchestrator agent, a router that prefers the user's own skills and ECC's before its own, and stage skills for design, verify, review, ship, and operate with runnable scripts. Adds only what is specific to pipelines, warehouses, dbt, Spark, and orchestration.",
-      "version": "0.4.1",
+      "version": "0.5.0",
       "category": "workflow",
       "keywords": [
         "data-engineering",

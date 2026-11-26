@@ -1,4 +1,6 @@
-# de-product-lifecycle
+# DE product lifecycle
+
+`de-product-lifecycle` on the marketplace.
 
 A Claude Code plugin that runs the lifecycle of a data product the way a careful data
 engineer would: design, build, verify, review, ship, operate, learn. It ships the decision
@@ -49,7 +51,7 @@ used instead.
 | design | [`de-impact`](skills/de-impact/SKILL.md) | Blast radius of a model or column change from the dbt manifest and BI layer, as a contract-break table. Extends ECC `change-impact`. `scripts/dbt_impact.py`. |
 | design | [`de-model`](skills/de-model/SKILL.md) | Decision checklist (grain, materialization, lookback, partition, SCD) then scaffolds a dbt model with schema tests and runs it. `scripts/scaffold_model.py`. |
 | verify | [`de-verify`](skills/de-verify/SKILL.md) | Before/after reconciliation of a changed table: counts, grain uniqueness, nulls, sums, bounds, one-sided keys. Flags what moved; exit 1 gates a PR. `scripts/reconcile.py`. |
-| review | [`de-code-review`](skills/de-code-review/SKILL.md) | Reviews data-engineering changes the way the Claude Code team reviews its own PRs: verify with tools, scale rigor to blast radius, report only real bugs with `file:line` and an `Important` / `Nit` / `Pre-existing` label. |
+| review | [`de-code-review`](skills/de-code-review/SKILL.md) | Reviews data-engineering changes the way the Claude Code team reviews its own PRs: verify with tools, scale rigor to blast radius, report only real bugs as three-sentence comments with `file:line` and a prefix that says whether it blocks (`Needs fix`, `Needs change`, `Needs human`) or not (`Question`, `Suggestion`, `Nit`, `Pre-existing`). |
 | ship | [`de-pr`](skills/de-pr/SKILL.md) | PR description built from proof: de-verify block under Testing, risk tier with downstream consumers, revert steps including data. `scripts/pr_body.py`. |
 | ship | [`de-backfill`](skills/de-backfill/SKILL.md) | Bounded, idempotent, partition-aware backfill plan with per-batch verify and stop conditions. `scripts/backfill_plan.py` never executes. |
 | operate | [`de-incident`](skills/de-incident/SKILL.md) | Layer-by-layer triage from symptom to root cause, containment, and a no-blame writeup that asks which check should have caught it. `scripts/run_results_summary.py`. |
