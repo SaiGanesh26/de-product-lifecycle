@@ -1,6 +1,6 @@
 ---
 name: de-code-review
-description: Review a diff, pull request, branch, or set of files for data-engineering code (SQL, dbt models, Spark/PySpark jobs, Airflow/Dagster/Prefect DAGs, Python ETL, schema migrations, warehouse or lakehouse infra) the way the Claude Code team reviews its own PRs. Verifies with tools it can actually run instead of trusting the author's or its own reading, scales rigor to blast radius, and reports only real bugs with file:line and an Important / Nit / Pre-existing label. Use this whenever the user asks to review, check, audit, sanity-check, double-check, or "look over" a change, PR, pipeline, model, DAG, query, backfill, or migration, asks "does this look right / is this safe to merge / what could go wrong", or wants a second opinion on data code they or an agent wrote, even when they never say "code review".
+description: Review a diff, pull request, branch, or set of files for data-engineering code (SQL, dbt models, Spark/PySpark jobs, Airflow/Dagster/Prefect DAGs, Python ETL, schema migrations, warehouse or lakehouse infra) the way the Claude Code team reviews its own PRs. Verifies with tools it can actually run instead of trusting the author's or its own reading, scales rigor to blast radius, and reports only real bugs with file:line and a two-word prefix (Needs fix, Needs change, Needs human, Question, Suggestion, Nit, Pre-existing) in three-sentence comments. Use this whenever the user asks to review, check, audit, sanity-check, double-check, or "look over" a change, PR, pipeline, model, DAG, query, backfill, or migration, asks "does this look right / is this safe to merge / what could go wrong", or wants a second opinion on data code they or an agent wrote, even when they never say "code review".
 ---
 
 # DE Code Review
@@ -139,11 +139,20 @@ So:
 
 - **Do not report** style, formatting, naming preferences, or cleanups unless the user
   asked for them or `REVIEW.md` demands them. Linters own that.
-- **Label every finding** `Important` (real bug or real risk, must be fixed or resolved
-  with a reason), `Nit` (worth a line, never blocks), or `Pre-existing` (a bug you found
-  that this diff did not introduce; report it so it gets fixed, but do not blame the
-  author for it). Roughly 59% of what an unconstrained reviewer flags is pre-existing
-  code, so this label will be busy.
+- **Prefix every finding** so the author knows in two words whether it blocks:
+
+  | Prefix | Blocks merge | Use for |
+  |---|---|---|
+  | `Needs fix:` | yes | A real bug: wrong output, crash, data loss, a test that no longer tests. |
+  | `Needs change:` | yes | The code may work but the approach is wrong: wrong grain, symptom patch over a root cause, a contract break downstream. |
+  | `Needs human:` | yes | High-tier territory a named person must sign off: destructive migration, backfill over prod, IAM, CI, billing. |
+  | `Question:` | until answered | You could not verify and the answer decides the verdict. Say what you ran and what you still need. |
+  | `Suggestion:` | no | A better way the author may take or leave. |
+  | `Nit:` | no | Trivial. One line, and no more than a handful per review; linters own style. |
+  | `Pre-existing:` | no, file a follow-up | A bug this diff did not introduce. Report it so it gets fixed, never as the author's fault. Roughly 59% of what an unconstrained reviewer flags is pre-existing, so expect to use this. |
+
+  The first three are the only ones that turn the verdict into "Request changes".
+
 - **Name the bug class**, not just the instance ("every incremental model in
   `marts/finance/` uses a 1-day lookback; the source lands up to 3 days late"), so the
   author fixes all of them in one pass rather than one per review round.
@@ -155,30 +164,63 @@ So:
   the new diff. After three rounds on the same PR, stop finding and start asking the
   author to rethink the approach.
 
+### Comment style
+
+Every finding is a comment the author reads at a glance, whether it lands in the report or
+inline on the PR. Reviews get ignored when comments are long, hedged, or about the author
+instead of the code, so:
+
+- **Prefix, claim, evidence, fix.** Three sentences at most; a `Nit:` is one. The claim says
+  what breaks. The evidence is the input or state that breaks it, or the command you ran.
+  The fix is code or a command when it is short, otherwise its name.
+- **Talk about the code, not the person.** "This join fans out on `order_id`" rather than
+  "you forgot to dedupe". No "I think", "maybe", or "consider perhaps": if you are not sure,
+  it is a `Question:`, not a softened `Needs fix:`.
+- **One finding per comment, anchored to `path:line`.** Name the bug class once in the
+  summary ("all three incremental models use a 1-day lookback") instead of repeating it on
+  every instance.
+- **Constructive means a way out.** Every blocking comment ends with the fix or the check
+  that would resolve it. A comment that only says what is wrong leaves the author guessing.
+
+Bad: "I think there might be an issue with how nulls are handled here? Maybe consider
+looking at the coalesce, it could possibly hide problems in some cases."
+
+Good: "`Needs fix:` `COALESCE(net_revenue, 0)` hides upstream nulls instead of surfacing
+them. 1,204 rows in `stg_orders` have null `net_revenue` since the 11-14 load (`SELECT
+COUNT(*) ... WHERE net_revenue IS NULL`). Drop the coalesce and add a `not_null` test on the
+staging column so the load fails loudly."
+
+Good: "`Nit:` `order_dt` is `order_date` everywhere else in `marts/`."
+
+When posting inline (`gh pr review --comment` or `gh api .../comments` with `path`, `line`,
+and `body`), post one comment per finding at its line in exactly this format, plus a single
+summary comment carrying the verdict and counts below. Never post a finding you cannot
+anchor to a line.
+
 ### Report template
 
 ```
 ## Review: <PR / branch / path> | Tier: <Low|Medium|High> (<one-line reason>)
 
 **Verdict:** <Approve | Approve with fixes | Request changes | Needs human review>
-**Findings:** <n> Important, <n> Nit, <n> Pre-existing   (or: **No issues found.**)
+**Findings:** <n> blocking (Needs fix / Needs change / Needs human), <n> non-blocking,
+<n> pre-existing   (or: **No issues found.**)
 
 ### What I verified
-- `<command>` → <one-line result>
-- ...
+- `<command>` -> <one-line result>
 - Could not verify: <what, and why it matters>
 
-### Important
-1. `path/to/file.sql:42`: <one-sentence defect>
-   Scenario: <input/state → wrong output>
-   Verify: <command or query>
-   Fix: <suggestion>
+### Blocking
+1. `path/to/file.sql:42` `Needs fix:` <claim>. <evidence>. <fix>.
+2. `path/to/dag.py:88` `Needs change:` ...
 
-### Nit
-...
+### Non-blocking
+- `path:line` `Suggestion:` ...
+- `path:line` `Nit:` ...
+- `path:line` `Question:` ...
 
 ### Pre-existing
-...
+- `path:line` `Pre-existing:` ... (follow-up, not this PR)
 
 ### Needs a human
 <Only for High tier or when a check is missing: what a person must look at and why.>
